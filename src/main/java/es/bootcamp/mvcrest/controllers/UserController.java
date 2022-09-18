@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -26,7 +27,7 @@ public class UserController {
        return (List<User>) repository.findAll();
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public User getUser(@PathVariable Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
@@ -37,7 +38,7 @@ public class UserController {
         return repository.save(user);
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public User replace(@PathVariable Long id, @RequestBody User body) {
         return repository.findById(id)
                 .map(user -> {
@@ -51,7 +52,7 @@ public class UserController {
                 });
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeUser(@PathVariable Long id) {
         repository.deleteById(id);
@@ -64,5 +65,19 @@ public class UserController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return repository.findAll(pageable);
+    }
+
+    // --> api/users/top3?firstName=a
+    @GetMapping(value = "/top3", params = { "firstName" })
+    public List<User> top3ByFirstNameContains(@RequestParam(value = "firstName", defaultValue = "") String firstName) {
+        return repository.getTop3ByFirstNameContains(firstName)
+                .orElseGet(ArrayList::new);
+    }
+
+    // --> api/users/top3?lastName=al
+    @GetMapping(value = "/top3", params = { "lastName" })
+    public List<User> top3ByLastNameContains(@RequestParam(value = "lastName", defaultValue = "") String lastName) {
+        return repository.getTop3ByLastNameContains(lastName)
+                .orElseGet(ArrayList::new);
     }
 }
