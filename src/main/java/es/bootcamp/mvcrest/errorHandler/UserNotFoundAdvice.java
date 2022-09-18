@@ -13,9 +13,4 @@ public class UserNotFoundAdvice {
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     String userNotFoundHandler(UserNotFoundException ex) { return ex.getMessage(); }
-
-    @ResponseBody
-    @ExceptionHandler(UserListNotAcceptable.class)
-    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
-    String userListRangeNotAcceptable(UserListNotAcceptable ex) { return ex.getMessage(); }
 }

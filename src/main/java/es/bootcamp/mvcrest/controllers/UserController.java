@@ -1,62 +1,68 @@
 package es.bootcamp.mvcrest.controllers;
 
-import es.bootcamp.mvcrest.errorHandler.UserListNotAcceptable;
 import es.bootcamp.mvcrest.errorHandler.UserNotFoundException;
 import es.bootcamp.mvcrest.model.User;
 import es.bootcamp.mvcrest.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserRepository repository;
 
-    UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    UserController(UserRepository repository) {
+        this.repository = repository;
     }
 
     @GetMapping
-    public List<User> getUsers() {
-       return userRepository.getUsers();
+    public List<User> all() {
+       return (List<User>) repository.findAll();
     }
 
-    @GetMapping("/{id}")
-    public User getUser(@PathVariable UUID id) {
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    @GetMapping("{id}")
+    public User getUser(@PathVariable Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     @PostMapping
     public User saveUser(@RequestBody User user) {
-        return userRepository.saveUser(user);
+        return repository.save(user);
     }
 
-    @PutMapping("/{id}")
-    public User updateUser(@PathVariable UUID id, @RequestBody User user) {
-        User updatedUser = userRepository.updateUser(id, user);
-        if (updatedUser == null) {
-            throw new UserNotFoundException(id);
-        }
-        return updatedUser;
+    @PutMapping("{id}")
+    public User replace(@PathVariable Long id, @RequestBody User body) {
+        return repository.findById(id)
+                .map(user -> {
+                   user.setFirstName(body.getFirstName());
+                   user.setLastName(body.getLastName());
+                   return repository.save(user);
+                })
+                .orElseGet(() -> {
+                    body.setId(id);
+                    return repository.save(body);
+                });
     }
 
-    @DeleteMapping("/{id}")
-    public void removeUser(@PathVariable UUID id) {
-        userRepository.removeUser(id);
+    @DeleteMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeUser(@PathVariable Long id) {
+        repository.deleteById(id);
     }
 
     @GetMapping( params = { "page", "size" })
-    public List<User> list(
+    public Page<User> list(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "3") int size
     ) {
-        List<User> list = userRepository.list(page, size);
-        if (list == null) {
-            throw new UserListNotAcceptable(page, size);
-        }
-        return list;
+        Pageable pageable = PageRequest.of(page, size);
+        return repository.findAll(pageable);
     }
 }

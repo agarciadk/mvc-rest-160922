@@ -1,20 +1,25 @@
 package es.bootcamp.mvcrest.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Objects;
-import java.util.UUID;
 
+@Entity
+@Table(name = "USERS")
 public class User {
-    private UUID id;
+    private @Id @GeneratedValue Long id;
     private String firstName;
     private String lastName;
 
-    public User(UUID id, String firstName, String lastName) {
-        this.id = id;
+    protected User() {}
+    public User(String firstName, String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
@@ -26,7 +31,7 @@ public class User {
         return lastName;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -40,11 +45,11 @@ public class User {
 
     @Override
     public String toString() {
-        return "{"
-                + "\"id\":" + id
-                + ", \"firstName\":\"" + firstName + "\""
-                + ", \"lastName\":\"" + lastName + "\""
-                + '}';
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                '}';
     }
 
     @Override
